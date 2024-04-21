@@ -57,6 +57,13 @@ class Graph:
         nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
         plt.show()
 
+    def __str__(self):
+        if self.adj_list is not None:
+            return str(self.adj_list)
+        elif self.adj_matrix is not None:
+            return str(self.adj_matrix)
+        return "Graph not initialized properly"
+
 def generate_random_graph(vertices, density, representation='adjacency_list'):
     graph = Graph(vertices, representation)
     for i in range(vertices):
@@ -82,7 +89,7 @@ def union_set(parent, rank, x, y):
         parent[root_y] = root_x
         rank[root_x] += 1
 
-def boruvka_algorithm(graph):
+def boruvka_algorithm_adj_list(graph):
     if not hasattr(graph, 'adj_list'):
         graph.to_adjacency_list()
     num_vertices = graph.num_vertices
@@ -93,6 +100,7 @@ def boruvka_algorithm(graph):
 
     while num_components > 1:
         cheapest = [-1] * num_vertices
+        edges_added = False
 
         for i in range(num_vertices):
             for (j, w) in graph.adj_list[i]:
@@ -112,28 +120,99 @@ def boruvka_algorithm(graph):
                     mst_weight += w
                     union_set(parent, rank, set_u, set_v)
                     num_components -= 1
+                    edges_added = True
+
+        if not edges_added:
+            break
+
+    return mst_weight
+
+def boruvka_algorithm_adj_matrix(graph):
+    if not hasattr(graph, 'adj_matrix'):
+        graph.to_adjacency_matrix()
+    num_vertices = graph.num_vertices
+    parent = list(range(num_vertices))
+    rank = [0] * num_vertices
+    mst_weight = 0
+    num_components = num_vertices
+
+    while num_components > 1:
+        cheapest = [-1] * num_vertices
+        edges_added = False
+
+        for i in range(num_vertices):
+            for j in range(num_vertices):
+                if graph.adj_matrix[i][j] != 0:
+                    set_i = find_set(parent, i)
+                    set_j = find_set(parent, j)
+                    if set_i != set_j:
+                        if cheapest[set_i] == -1 or cheapest[set_i][0] > graph.adj_matrix[i][j]:
+                            cheapest[set_i] = (graph.adj_matrix[i][j], i, j)
+
+        # Add cheapest edges to the MST
+        for i in range(num_vertices):
+            if cheapest[i] != -1:
+                w, u, v = cheapest[i]
+                set_u = find_set(parent, u)
+                set_v = find_set(parent, v)
+                if set_u != set_v:
+                    mst_weight += w
+                    union_set(parent, rank, set_u, set_v)
+                    num_components -= 1
+                    edges_added = True
+
+        if not edges_added:
+            break
 
     return mst_weight
 
 def measure_performance():
-    vertices = [10, 20, 50, 100, 200, 300, 400, 500]
-    density = 0.3
-    times = []
+    vertices = [20, 50, 70, 90, 100, 120, 150, 180, 200]
+    density = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    times_by_list = []
+    times_by_matrix = []
 
-    for v in vertices:
-        graph = generate_random_graph(v, density)
-        start_time = time.time()
-        mst_weight = boruvka_algorithm(graph)
-        end_time = time.time()
-        times.append((v, end_time - start_time, mst_weight))
+    for _ in range(20):
+        for v in vertices:
+            time_for_v_by_list = []
+            time_for_v_by_matrix = []
+            for d in density:
 
-    for v, t, w in times:
-        print(f"Vertices: {v}, Time: {t:.4f} seconds, MST Weight: {w}")
+                graph = generate_random_graph(v, d)
+                start_time_list = time.time()
+                mst_weight_list = boruvka_algorithm_adj_list(graph)
+                end_time_list = time.time()
+
+                graph.to_adjacency_matrix()
+                start_time_matrix = time.time()
+                mst_weight_matrix = boruvka_algorithm_adj_matrix(graph)
+                end_time_matrix = time.time()
+
+                time_for_v_by_list.append((v, end_time_list - start_time_list, mst_weight_list))
+                time_for_v_by_matrix.append((v, end_time_matrix - start_time_matrix, mst_weight_matrix))
+                # graph.visualize()
+
+            times_by_list.append(time_for_v_by_list)
+            times_by_matrix.append(time_for_v_by_matrix)
+
+    with open('by_list.txt', 'w') as f:
+        for mass in times_by_list:
+            for v, t, w in mass:
+                f.write(f"Vertices: {v}, Time: {t:.4f} seconds, MST Weight by list: {w}\n")
+
+    with open('by_matrix.txt', 'w') as f:
+        for mass in times_by_matrix:
+            for v, t, w in mass:
+                f.write(f"Vertices: {v}, Time: {t:.4f} seconds, MST Weight by matrix: {w}\n")
+
+    with open('by_list_raw.txt', 'w') as f:
+        for mass in times_by_list:
+            for v, t, w in mass:
+                f.write(f"{v} {t:.4f} {w}\n")
+
+    with open('by_matrix_raw.txt', 'w') as f:
+        for mass in times_by_matrix:
+            for v, t, w in mass:
+                f.write(f"{v} {t:.4f} {w}\n")
 
 measure_performance()
-
-vertices = 12
-density = 0.5
-graph = generate_random_graph(vertices, density)
-graph.visualize()
-
