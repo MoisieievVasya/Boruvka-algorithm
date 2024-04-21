@@ -188,8 +188,8 @@ def measure_performance():
                 mst_weight_matrix = boruvka_algorithm_adj_matrix(graph)
                 end_time_matrix = time.time()
 
-                time_for_v_by_list.append((v, end_time_list - start_time_list, mst_weight_list))
-                time_for_v_by_matrix.append((v, end_time_matrix - start_time_matrix, mst_weight_matrix))
+                time_for_v_by_list.append((d, v, end_time_list - start_time_list, mst_weight_list))
+                time_for_v_by_matrix.append((d, v, end_time_matrix - start_time_matrix, mst_weight_matrix))
                 # graph.visualize()
 
             times_by_list.append(time_for_v_by_list)
@@ -197,22 +197,22 @@ def measure_performance():
 
     with open('by_list.txt', 'w') as f:
         for mass in times_by_list:
-            for v, t, w in mass:
-                f.write(f"Vertices: {v}, Time: {t:.4f} seconds, MST Weight by list: {w}\n")
+            for d, v, t, w in mass:
+                f.write(f"Density:{d}, Vertices: {v}, Time: {t:.4f} seconds, MST Weight by list: {w}\n")
 
     with open('by_matrix.txt', 'w') as f:
         for mass in times_by_matrix:
-            for v, t, w in mass:
-                f.write(f"Vertices: {v}, Time: {t:.4f} seconds, MST Weight by matrix: {w}\n")
+            for d, v, t, w in mass:
+                f.write(f"Density:{d}, Vertices: {v}, Time: {t:.4f} seconds, MST Weight by matrix: {w}\n")
 
     with open('by_list_raw.txt', 'w') as f:
         for mass in times_by_list:
-            for v, t, w in mass:
-                f.write(f"{v} {t:.4f} {w}\n")
+            for d, v, t, w in mass:
+                f.write(f"{d} {v} {t:.4f} {w}\n")
 
     with open('by_matrix_raw.txt', 'w') as f:
         for mass in times_by_matrix:
-            for v, t, w in mass:
-                f.write(f"{v} {t:.4f} {w}\n")
+            for d, v, t, w in mass:
+                f.write(f"{d} {v} {t:.4f} {w}\n")
 
 measure_performance()
