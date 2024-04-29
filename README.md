@@ -1,4 +1,4 @@
-# MST Boruvka Algorithm Performance Measurement (Яковлев краш)(Не бийте за ноушен, бумласка) 
+# MST Boruvka Algorithm Performance Measurement (Яковлев краш)(Не бийте за ноушен, бумласка)(І за пайтон теж)
 
 This program measures the performance of Boruvka's algorithm for finding the minimum spanning tree (MST) of a graph. It compares the performance using adjacency list and adjacency matrix representations.
 
